@@ -35,10 +35,13 @@ describe('Error handler middleware', () => {
   test('should filter errors sent to sentry', () => {
     errorHandler([401, 403, 404]).middleware(err, req, res, next);
     expect(captureException).not.toBeCalled();
+    expect(next).toBeCalled();
 
-    const err500 = {message: 'test error 500'}
-    errorHandler([401, 403, 404]).logError('test', err500);
+    next.mockClear()
+    const err500 = {message: 'test error 500'} // Doesn't throw error with code
+    errorHandler([401, 403, 404]).middleware(err500, req, res, next);
     expect(captureException).toBeCalled();
+    expect(next).toBeCalled();
   })
 });
 
