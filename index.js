@@ -18,12 +18,10 @@ const errorHandler = ({ blockEvents = [] } = {}) => ({
   middleware(err, req, res, next) {
     if (blockEvents.includes(err.status)) return next(err);
     const eventId = Sentry.captureException(err);
-    debug(
-      `service:error->${req.protocol +
-        '://' +
-        req.get('host') +
-        req.originalUrl}-> eventId: ${eventId}`
-    )('throws an error %o', err.message);
+    const origin = `service:error->${req.protocol}://${req.get('host')}${
+      req.originalUrl
+    }->eventId: ${eventId}`;
+    debug(origin)('throws an error %o', err.message);
     return next(err);
   },
   logError(origin, err) {
