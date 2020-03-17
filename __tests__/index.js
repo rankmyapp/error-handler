@@ -19,6 +19,8 @@ describe('Error handler middleware', () => {
     status: 404,
   }
 
+  const blockEvents = [401, 403, 404];
+
   const req = {
     protocol: '',
     get: jest.fn(),
@@ -33,13 +35,13 @@ describe('Error handler middleware', () => {
   });
 
   test('should filter errors sent to sentry', () => {
-    errorHandler([401, 403, 404]).middleware(err, req, res, next);
+    errorHandler({ blockEvents }).middleware(err, req, res, next);
     expect(captureException).not.toBeCalled();
     expect(next).toBeCalled();
 
     next.mockClear()
     const err500 = {message: 'test error 500'} // Doesn't throw error with code
-    errorHandler([401, 403, 404]).middleware(err500, req, res, next);
+    errorHandler({ blockEvents }).middleware(err500, req, res, next);
     expect(captureException).toBeCalled();
     expect(next).toBeCalled();
   })
@@ -57,6 +59,8 @@ describe('Error handler logError', () => {
     status: 404,
   }
 
+  const blockEvents = [401, 403, 404];
+
   test('should call captureException', () => {
     errorHandler().logError(origin, err);
     expect(captureException).toBeCalled();
@@ -68,11 +72,11 @@ describe('Error handler logError', () => {
   });
 
   test('should filter errors sent to sentry', () => {
-    errorHandler([401, 403, 404]).logError(origin, err);
+    errorHandler({ blockEvents }).logError(origin, err);
     expect(captureException).not.toBeCalled();
     
     const err500 = {message: 'test error 500'} // Doesn't throw error with code
-    errorHandler([401, 403, 404]).logError(origin, err500);
+    errorHandler({ blockEvents }).logError(origin, err500);
     expect(captureException).toBeCalled();
   })
 });
