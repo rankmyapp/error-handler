@@ -26,16 +26,19 @@ describe('Error handler middleware', () => {
   const res = {};
   const next = jest.fn();
 
-  test('should call captureException', () => {
-    const eventId = captureException.mockReturnValue('123');
-    errorHandler().middleware(new Error(), req, res, next);
+  test('should send error to sentry and move on to next middleware', () => {
+    errorHandler().middleware(err, req, res, next);
     expect(captureException).toBeCalled();
-    expect(eventId).toBeTruthy();
+    expect(next).toBeCalled();
   });
 
-  test('should not send to sentry according to block list', () => {
+  test('should filter errors sent to sentry', () => {
     errorHandler([401, 403, 404]).middleware(err, req, res, next);
     expect(captureException).not.toBeCalled();
+
+    const err500 = {message: 'test error 500'}
+    errorHandler([401, 403, 404]).logError('test', err500);
+    expect(captureException).toBeCalled();
   })
 });
 
@@ -44,29 +47,29 @@ describe('Error handler logError', () => {
     jest.clearAllMocks();
   });
 
+  const origin = 'test origin'
+
   const err = {
     message: 'test error',
     status: 404,
   }
 
   test('should call captureException', () => {
-    const origin = 'test';
-    const error = new Error();
-    const eventId = captureException.mockReturnValue('123');
-    errorHandler().logError(origin, error);
+    errorHandler().logError(origin, err);
     expect(captureException).toBeCalled();
-    expect(eventId).toBeTruthy();
   });
 
   test('should return an error if Origin and Error is not provided', () => {
-    const origin = null;
-    const error = null;
-    expect(() => errorHandler().logError(origin, error)).toThrowError(new Error('Origin is required (from where the error was thrown)'))
-    expect(captureException).toBeCalledTimes(0);
+    expect(() => errorHandler().logError(null, null)).toThrowError(new Error('Origin is required (from where the error was thrown)'))
+    expect(captureException).not.toBeCalled();
   });
 
-  test('should not send to sentry according to block list', () => {
-    errorHandler([401, 403, 404]).logError('teste', err);
+  test('should filter errors sent to sentry', () => {
+    errorHandler([401, 403, 404]).logError(origin, err);
     expect(captureException).not.toBeCalled();
+    
+    const err500 = {message: 'test error 500'} // Doesn't throw error with code
+    errorHandler([401, 403, 404]).logError(origin, err500);
+    expect(captureException).toBeCalled();
   })
 });
