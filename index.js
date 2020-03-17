@@ -1,12 +1,14 @@
 const Sentry = require('@sentry/node')
 const debug = require('debug')
 
-if (!process.env.NODE_ENV) throw Error('Invalid Node ENV')
-if (!process.env.SENTRY_URL) throw Error('Invalid Sentry DSN')
+if (process.env.NODE_ENV !== 'test' ) {
+  if (!process.env.NODE_ENV) throw Error('Invalid Node ENV')
+  if (!process.env.SENTRY_URL) throw Error('Invalid Sentry DSN')
+}
 
 const production = process.env.NODE_ENV === 'production';
 
-Sentry.init({ dsn: production ? process.env.SENTRY_URL : null, environment: process.env.NODE_ENV });
+if (production) Sentry.init({ dsn: process.env.SENTRY_URL, environment: process.env.NODE_ENV });
 
 const errorHandler = () => ({
   middleware(err, req, res, next) {
