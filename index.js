@@ -17,7 +17,7 @@ const errorHandler = () => ({
     next(err);
   },
   logError(origin, err) {
-    if (!origin) throw Error('Origin is required (from where the error was trown)');
+    if (!origin) throw Error('Origin is required (from where the error was thrown)');
     if (!err) throw Error('An Error is necessary to log');
     const eventId = Sentry.captureException(err);
     debug(`service:error->${origin}-> enventId: ${eventId}`)('throws an error %o', err.message);
