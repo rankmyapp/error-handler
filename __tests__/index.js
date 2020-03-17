@@ -17,14 +17,14 @@ describe('Error handler middleware', () => {
   const err = {
     message: 'test error',
     status: 404,
-  }
+  };
 
   const blockEvents = [401, 403, 404];
 
   const req = {
     protocol: '',
     get: jest.fn(),
-  }
+  };
   const res = {};
   const next = jest.fn();
 
@@ -39,12 +39,12 @@ describe('Error handler middleware', () => {
     expect(captureException).not.toBeCalled();
     expect(next).toBeCalled();
 
-    next.mockClear()
-    const err500 = {message: 'test error 500'} // Doesn't throw error with code
+    next.mockClear();
+    const err500 = { message: 'test error 500' }; // Doesn't throw error with code
     errorHandler({ blockEvents }).middleware(err500, req, res, next);
     expect(captureException).toBeCalled();
     expect(next).toBeCalled();
-  })
+  });
 });
 
 describe('Error handler logError', () => {
@@ -52,12 +52,12 @@ describe('Error handler logError', () => {
     jest.clearAllMocks();
   });
 
-  const origin = 'test origin'
+  const origin = 'test origin';
 
   const err = {
     message: 'test error',
     status: 404,
-  }
+  };
 
   const blockEvents = [401, 403, 404];
 
@@ -67,16 +67,18 @@ describe('Error handler logError', () => {
   });
 
   test('should return an error if Origin and Error is not provided', () => {
-    expect(() => errorHandler().logError(null, null)).toThrowError(new Error('Origin is required (from where the error was thrown)'))
+    expect(() => errorHandler().logError(null, null)).toThrowError(
+      new Error('Origin is required (from where the error was thrown)')
+    );
     expect(captureException).not.toBeCalled();
   });
 
   test('should filter errors sent to sentry', () => {
     errorHandler({ blockEvents }).logError(origin, err);
     expect(captureException).not.toBeCalled();
-    
-    const err500 = {message: 'test error 500'} // Doesn't throw error with code
+
+    const err500 = { message: 'test error 500' }; // Doesn't throw error with code
     errorHandler({ blockEvents }).logError(origin, err500);
     expect(captureException).toBeCalled();
-  })
+  });
 });
