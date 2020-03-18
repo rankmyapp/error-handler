@@ -14,7 +14,7 @@ The `errorHandler` function accepts a list of error codes it should filter from 
 
 ```javascript
 const errorHandler = require('error-handler');
-app.use(errorHandler([404, 403, 401]).middleware);
+app.use(errorHandler({ blockEvents: [404, 403, 401] }).middleware);
 ```
 
 or
