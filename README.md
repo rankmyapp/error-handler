@@ -1,3 +1,6 @@
+ ![CI](https://github.com/rankmyapp/error-handler/workflows/CI/badge.svg)
+
+
 # error-handler
 
 Technologies
