@@ -14,10 +14,10 @@ if (isProduction)
     environment: process.env.NODE_ENV,
   });
 
-function filterLog({status, statusCode}, blockEvents) {
+const filterLog = ({ status, statusCode }, blockEvents) => {
   const errorCode = typeof status === 'number' ? status : statusCode;
   return blockEvents.includes(errorCode);
-}
+};
 
 const errorHandler = ({ blockEvents = [] } = {}) => ({
   middleware(err, req, res, next) {
