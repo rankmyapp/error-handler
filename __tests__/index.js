@@ -39,9 +39,17 @@ describe('Error handler middleware', () => {
     expect(captureException).not.toBeCalled();
     expect(next).toBeCalled();
 
+    // Error code 500 doesn't throw object with code
     next.mockClear();
-    const err500 = { message: 'test error 500' }; // Doesn't throw error with code
+    const err500 = { message: 'test error 500' };
     errorHandler({ blockEvents }).middleware(err500, req, res, next);
+    expect(captureException).toBeCalled();
+    expect(next).toBeCalled();
+
+    // Errors created by express's res object
+    next.mockClear();
+    const resErr = { ...err, status: () => {}, statusCode: 403 };
+    errorHandler({ blockEvents }).middleware(resErr, req, res, next);
     expect(captureException).toBeCalled();
     expect(next).toBeCalled();
   });
@@ -77,8 +85,14 @@ describe('Error handler logError', () => {
     errorHandler({ blockEvents }).logError(origin, err);
     expect(captureException).not.toBeCalled();
 
-    const err500 = { message: 'test error 500' }; // Doesn't throw error with code
+    // Error code 500 doesn't throw object with code
+    const err500 = { message: 'test error 500' };
     errorHandler({ blockEvents }).logError(origin, err500);
+    expect(captureException).toBeCalled();
+
+    // Errors created by express's res object
+    const resErr = { ...err, status: () => {}, statusCode: 403 };
+    errorHandler({ blockEvents }).logError(origin, resErr);
     expect(captureException).toBeCalled();
   });
 });

@@ -14,9 +14,14 @@ if (isProduction)
     environment: process.env.NODE_ENV,
   });
 
+const filterLog = ({ status, statusCode }, blockEvents) => {
+  const errorCode = typeof status === 'number' ? status : statusCode;
+  return blockEvents.includes(errorCode);
+};
+
 const errorHandler = ({ blockEvents = [] } = {}) => ({
   middleware(err, req, res, next) {
-    if (blockEvents.includes(err.status)) return next(err);
+    if (filterLog(err, blockEvents)) return next(err);
     const eventId = Sentry.captureException(err);
     const origin = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
     const title = `service:error->${origin}->eventId: ${eventId}`;
@@ -27,7 +32,7 @@ const errorHandler = ({ blockEvents = [] } = {}) => ({
     if (!origin)
       throw Error('Origin is required (from where the error was thrown)');
     if (!err) throw Error('An Error is necessary to log');
-    if (blockEvents.includes(err.status)) return false;
+    if (filterLog(err, blockEvents)) return false;
     const eventId = Sentry.captureException(err);
     const title = `service:error->${origin}-> eventId: ${eventId}`;
     debug(title)('throws an error %s', err.message);
